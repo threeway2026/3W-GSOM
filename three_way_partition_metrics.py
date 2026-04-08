@@ -1,46 +1,10 @@
-"""
-Implements CFSI and TPQI as defined in Eqs. (36)-(39):
-  CP   : core purity            (Eq. 36)
-  FA   : fringe ambiguity       (Eq. 37)
-  CFSI : core-fringe stratification index = (CP + FA) / 2   (Eq. 38)
-  TPQI : three-way partition quality index                   (Eq. 39)
-         TPQI = CP * CR + FA * (1 - CR),  CR = n_core / |U|
-
-Dependencies: numpy
-"""
-
 import warnings
 import numpy as np
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-
-# ===========================================================================
-# ThreeWayPartition — unified representation of a three-way clustering result
-# ===========================================================================
-
 @dataclass
 class ThreeWayPartition:
-    """
-    Unified representation of a three-way clustering result.
-
-    Parameters
-    ----------
-    core_indices   : List[List[int]]
-        core_indices[k] contains sample indices in the core region of cluster k.
-        Core regions are pairwise disjoint (Proposition 1).
-    fringe_indices : List[List[int]]
-        fringe_indices[k] contains sample indices in the fringe region of cluster k.
-        Cross-cluster overlap is permitted.
-    trivial_indices : List[int]
-        Indices of samples not covered by any core or fringe region.
-    labels         : np.ndarray, shape (n_samples,)
-        Hard cluster label for each sample (0-indexed).
-    n_samples      : int
-    n_clusters     : int
-    algorithm      : str
-    """
-
     core_indices    : List[List[int]]
     fringe_indices  : List[List[int]]
     trivial_indices : List[int]
@@ -93,11 +57,6 @@ class ThreeWayPartition:
                         cnt[i] += 1
             self._fringe_count = cnt
         return self._fringe_count
-
-
-# ===========================================================================
-# compute_threeway_metrics
-# ===========================================================================
 
 def compute_threeway_metrics(
     partition : ThreeWayPartition,
@@ -161,7 +120,6 @@ def compute_threeway_metrics(
     # CFSI = (CP + FA) / 2
     # Degenerate case (n_fringe_mult == 0): no fringe region, FA undefined.
     # CFSI is set to 0 as a sentinel value, strictly below the neutral
-    # baseline CFSI = 0.5 (which holds when CP = 1 - FA, i.e. CP = FP).
     if np.isnan(CP):
         CFSI = float('nan')
     elif n_fringe_mult == 0:
